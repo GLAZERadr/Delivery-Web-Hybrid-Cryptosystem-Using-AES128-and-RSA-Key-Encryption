@@ -13,7 +13,7 @@
 <div class="container-fluid">
     <div class="container py-5">
         <div class="bg-light px-4 py-5 rounded">
-            <form class="mb-4" method="post" action="<?= base_url('home/pengirimansubmit') ?>">
+            <form class="mb-4" method="post" action="<?= base_url('pelanggan/pengirimansubmit') ?>">
                 <div class="row g-4">
                     <h2>Rekap Paket</h2>
                     <div class="col-xl-12 col-lg-12">

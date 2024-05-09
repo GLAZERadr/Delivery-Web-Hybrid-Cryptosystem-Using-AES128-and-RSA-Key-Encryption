@@ -21,7 +21,7 @@
         <div class="row g-5 mb-5">
             <div class="col-lg-12 ">
                 <div class="rounded contact-form">
-                    <form method="post" enctype="multipart/form-data" action="<?= base_url('home/profiledit/'.$row['idpelanggan']) ?>">
+                    <form method="post" enctype="multipart/form-data" action="<?= base_url('pelanggan/profiledit/'.$row['idpelanggan']) ?>">
                  
                         <div class="mb-4">
                             <label class="mb-2">Nama</label>

@@ -15,14 +15,6 @@ class Kurir extends CI_Controller
         $this->load->view('kurir/layout/footer');
     }
 
-    public function logout()
-    {
-        $this->session->sess_destroy();
-        $this->session->set_flashdata('alert', 'Anda Telah Logout');
-
-        redirect('home');
-    }
-
     public function pengirimandaftar()
     {
         $this->load->model('m_kurir');
@@ -44,7 +36,7 @@ class Kurir extends CI_Controller
         $this->load->model('m_kurir');
 
         $idkurir = $this->session->userdata("kurir")["idkurir"];
-        $pengiriman =  $this->m_kuriir->historyPenghiriman($idkurir);
+        $pengiriman =  $this->m_kurir->historyPengiriman($idkurir);
 
         $data = [
             'pengiriman' => $pengiriman,
@@ -110,7 +102,7 @@ class Kurir extends CI_Controller
         $this->load->model('m_kurir');
 
         $idkurir = $this->session->userdata("kurir")["idkurir"];
-        $kurir =  $this->m_kurir->tampilKurir($id);
+        $kurir =  $this->m_kurir->tampilKurir($idkurir);
 
         $data = [
             'kurir' => $kurir,

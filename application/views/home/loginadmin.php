@@ -19,7 +19,7 @@
         <div class="row g-5 mb-5">
             <div class="col-lg-12">
                 <div class="rounded contact-form">
-                    <form method="post" action="<?= base_url('home/logincekadmin') ?>">
+                    <form method="post" action="<?= base_url('auth/prosesLoginAdmin') ?>">
                         <div class="mb-4">
                             <label class="mb-2">Username</label>
                             <input type="username" class="form-control p-3" name="username" placeholder="Masukkan username">

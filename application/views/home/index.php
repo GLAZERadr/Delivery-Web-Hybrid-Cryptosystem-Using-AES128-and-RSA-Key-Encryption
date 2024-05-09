@@ -43,7 +43,7 @@
             </div>
             <div class="col-lg-12 my-auto wow fadeInUp" data-wow-delay="0.5s">
                 <div class="h-100">
-                    <form action="<?= base_url('home/inputtracking') ?>" method="post">
+                    <form action="<?= base_url('pelanggan/inputtracking') ?>" method="post">
                         <div class="input-group mb-3">
                             <input type="text" name="kodepengiriman" class="form-control" placeholder="Masukkan Kode Pengiriman">
                             <button type="submit" class="btn btn-primary">Track</button>

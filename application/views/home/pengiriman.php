@@ -13,7 +13,7 @@
 <div class="container-fluid">
     <div class="container py-5">
         <div class="bg-light px-4 py-5 rounded">
-            <form class="mb-4" method="post" action="<?= base_url('home/pengirimanrekap') ?>">
+            <form class="mb-4" method="post" action="<?= base_url('pelanggan/pengirimanrekap') ?>">
                 <div class="row g-4">
                     <div class="col-xl-12 col-lg-12">
                         <div class="row">

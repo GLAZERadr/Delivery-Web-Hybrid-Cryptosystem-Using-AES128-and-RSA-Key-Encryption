@@ -62,7 +62,7 @@
                                     <td><?= $row['keterangan'] ?></td>
                                     <td>
                                         <?php if (!empty($row['lat']) && !empty($row['lang'])) : ?>
-                                            <a href="<?= base_url('home/tracking/' . $row['kodepengiriman']) ?>" class="btn btn-primary m-1">Tracking</a>
+                                            <a href="<?= base_url('pelanggan/tracking/' . $row['kodepengiriman']) ?>" class="btn btn-primary m-1">Tracking</a>
                                         <?php endif; ?>
                                         <?php if ($row['status'] == 'Sudah Di Kirim') : ?>
                                             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalSelesai<?= $row['idpengiriman'] ?>">Konfirmasi Selesai</button>
@@ -80,7 +80,7 @@
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                                    <a href="<?= base_url('home/konfirmasiselesai/' . $row['idpengiriman']) ?>" class="btn btn-primary">Selesai</a>
+                                                    <a href="<?= base_url('pelanggan/konfirmasiselesai/' . $row['idpengiriman']) ?>" class="btn btn-primary">Selesai</a>
                                                 </div>
                                             </div>
                                         </div>

@@ -108,17 +108,17 @@
                                 <div class="dropdown-menu m-0 bg-primary">
                                     <a href="<?= base_url('home/profil') ?>" class="dropdown-item">Profil</a>
                                     <a href="<?= base_url('home/riwayat') ?>" class="dropdown-item">Riwayat</a>
-                                    <a href="<?= base_url('home/logout') ?>" class="dropdown-item">Keluar</a>
+                                    <a href="<?= base_url('auth/logout') ?>" class="dropdown-item">Keluar</a>
                                 </div>
                             </div>
                         <?php } else { ?>
-                            <a href="<?= base_url('home/daftar') ?>" class="nav-item nav-link">Daftar</a>
+                            <a href="<?= base_url('auth/daftar') ?>" class="nav-item nav-link">Daftar</a>
                             <div class="nav-item dropdown">
                                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Login</a>
                                 <div class="dropdown-menu m-0 bg-primary">
-                                    <a href="<?= base_url('home/login') ?>" class="dropdown-item">Login User</a>
-                                    <a href="<?= base_url('home/loginadmin') ?>" class="dropdown-item">Login Admin</a>
-                                    <a href="<?= base_url('home/loginkurir') ?>" class="dropdown-item">Login Kurir</a>
+                                    <a href="<?= base_url('auth/login') ?>" class="dropdown-item">Login User</a>
+                                    <a href="<?= base_url('auth/loginadmin') ?>" class="dropdown-item">Login Admin</a>
+                                    <a href="<?= base_url('auth/loginkurir') ?>" class="dropdown-item">Login Kurir</a>
                                 </div>
                             </div>
                         <?php } ?>

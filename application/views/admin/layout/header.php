@@ -107,6 +107,7 @@
 
                                 <img class="img-profile rounded-circle" src="<?= base_url() ?>assets/img/login.png">
                             </a>
+                            
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
