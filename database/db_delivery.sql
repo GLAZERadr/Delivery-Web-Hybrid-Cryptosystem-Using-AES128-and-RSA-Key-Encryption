@@ -124,17 +124,6 @@ CREATE TABLE `pengiriman` (
 -- Dumping data untuk tabel `pengiriman`
 --
 
-INSERT INTO `pengiriman` (`idpengiriman`, `idkurir`, `idpelanggan`, `kodepengiriman`, `namapengirim`, `alamatpengirim`, `nohppengirim`, `namapenerima`, `alamatpenerima`, `nohppenerima`, `jenisbarang`, `berat`, `jenislayanan`, `biaya`, `lat`, `lang`, `status`, `tanggal`, `lat_pengirim`, `lang_pengirim`, `lat_penerima`, `lang_penerima`, `keterangan`, `waktupickup`) VALUES
-(2, 1, 1, 'DLV55718', 'Sugeng', 'Jl Sudirman', '08321321', 'Antonio', 'Jl Sudirman Anwar', '08321321', 'Buku', '1', 'Reguler', '20000', '-2.959978', '104.730276', 'Di Setujui', '2024-04-22', '', '', '-2.913340', '104.690226', '', NULL),
-(3, 2, 1, 'DLV61473', 'Sugeng', 'asddsa', '098321', 'Andani', 'Palembang Jln 123', '0768423', 'Kue', '1', 'Reguler', '30000', '-2.961641', '104.727731', 'Sedang Dalam Perjalanan', '2024-04-22', '', '', '-2.955898', '104.783521', 'tes', NULL),
-(4, 2, 1, 'DLV31685', 'Andi', 'asdasdasd', '21312312', 'Anton', 'dasdasdas', '321312321', 'Buku', '1', 'Reguler', '', '-2.965504', '104.7396352', 'Selesai', '2024-04-23', '-3.003336', '104.730955', '-2.989145', '104.731367', 'Lokasi kurir diperbarui pada 2024-04-23 12:24:33', NULL),
-(5, 2, 1, 'DLV22077', 'Sugeng asd', 'Jl jakarta', '07321321', 'Jonjon', 'Jl bandung', '07798567', 'Makanan', '1', 'Reguler', '30000', '-1.5983818', '103.6044397', 'Selesai', '2024-04-24', '-2.972329', '104.771463', '-3.010216', '104.760025', 'Pesanan Telah Sampai Pada Penerima.', NULL),
-(6, 2, 1, 'DLV29017', 'Sugeng dsad', 'jl 1234', '08321321', 'Poles', 'Jl 3456', '3213123', 'Makanan', '1', 'Reguler', '30000', '-1.5983818', '103.6044397', 'Selesai', '2024-04-24', '-2.996698', '104.728379', '-3.002932', '104.796448', 'Pesanan Telah Sampai Pada Penerima.', NULL),
-(7, 0, 1, 'DLV17035', 'Sugeng', 'asdsadsa', '0938721321', 'Anton', 'asdasdsa', '90867867', 'Makanan', '1', 'Hemat', '', '', '', 'Menunggu Konfirmasi Admin', '2024-04-24', '-2.985524', '104.747692', '-2.996238', '104.763785', '', NULL),
-(8, 0, 1, 'DLV49991', 'Sugeng', 'asdsadasdsa', '3213032183213', 'Poela', 'sadasdas', '0876787', 'Makanan', '1', 'Reguler', '', '', '', 'Menunggu Konfirmasi Admin', '2024-04-24', '-3.028061', '104.789198', '-2.978777', '104.798841', '', '2024-04-25 19:49:00'),
-(10, 0, 1, 'DLV97272', 'Sugeng', 'ASdASD', '08321321', 'Antonio', 'dasadas', '088786', 'Makanan', '1', 'Reguler', '15000', '', '', 'Menunggu Konfirmasi Admin', '2024-04-24', '-3.003947', '104.727594', '-2.980371', '104.778169', '', '2024-04-25 20:18:00'),
-(11, 0, 1, 'DLV15125', 'Sugeng', 'sadasdsa', '321321321', 'Anotini', 'dasdasfawe', '321632131', 'Makanan', '1', 'Reguler', '15000', '', '', 'Menunggu Konfirmasi Admin', '2024-04-24', '-2.996800', '104.723511', '-2.997150', '104.776122', '', '2024-04-25 20:19:00');
-
 --
 -- Indexes for dumped tables
 --

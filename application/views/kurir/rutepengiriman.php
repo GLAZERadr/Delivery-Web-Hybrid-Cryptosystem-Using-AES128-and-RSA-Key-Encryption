@@ -1,7 +1,8 @@
 <?php
+$aes = new AES128Encryption("AdrianBadjideh11");
 
-$lat_kurir = $pengiriman['lat'];
-$lang_kurir = $pengiriman['lang'];
+$lat_kurir = $aes->decrypt($pengiriman['lat']);
+$lang_kurir = $aes->decrypt($pengiriman['lang']);
 $lat_penerima = $pengiriman['lat_penerima'];
 $lang_penerima = $pengiriman['lang_penerima'];
 $lat_pengirim = $pengiriman['lat_pengirim'];

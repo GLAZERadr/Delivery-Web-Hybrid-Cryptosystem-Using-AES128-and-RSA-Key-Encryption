@@ -11,10 +11,29 @@ class M_pengiriman extends CI_Model
         return $this->db->where('idpengiriman', $id)->get('pengiriman')->row_array();
     } 
 
-    public function updateKoordinatLokasi($id, $data) {
+    public function updateKoordinatLokasi($id, $data, $hashCoordinate) {
+        $this->db->trans_start(); // Start transaction
+        
+        // Update coordinates in the pengiriman table
         $this->db->where('idpengiriman', $id)->update('pengiriman', $data);
+    
+        // Insert or update coordinates in the hashcoordinate table
+        $this->db->where('idpengiriman', $id)->from('hashcoordinate');
+        $count = $this->db->count_all_results();
+    
+        if ($count > 0) {
+            // If entry exists, update it
+            $this->db->where('idpengiriman', $id)->update('hashcoordinate', $hashCoordinate);
+        } else {
+            // If entry does not exist, insert it
+            $this->db->insert('hashcoordinate', $hashCoordinate);
+        }
+    
+        $this->db->trans_complete(); // Complete transaction
+    
+        return $this->db->trans_status(); // Return transaction status
     }
-
+    
     public function updateStatus($id, $data) {
         $this->db->where('idpengiriman', $id)->update('pengiriman', $data);
     }

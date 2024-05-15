@@ -34,6 +34,9 @@
                         </thead>
                         <tbody>
                             <?php $nomor = 1; ?>
+                            <?php include 'application/security/encryption/AES128Encryption.php';
+                                $aes = new AES128Encryption("AdrianBadjideh11");
+                            ?>
                             <?php foreach ($pengiriman as $row) {
                                 $kurir = $this->db->where('idkurir', $row['idkurir'])->get('kurir')->row_array();
                             ?>
@@ -55,8 +58,8 @@
                                         } ?>
                                     </td>
                                     <td>
-                                        <p>Latitude : <?= !empty($row['lat']) ? $row['lat'] : '-' ?></p>
-                                        <p>Longitude : <?= !empty($row['lang']) ? $row['lang'] : '-' ?></p>
+                                        <p>Latitude : <?= !empty($row['lat']) ? $aes->decrypt($row['lat']) : '-' ?></p>
+                                        <p>Longitude : <?= !empty($row['lang']) ? $aes->decrypt($row['lang']) : '-' ?></p>
                                     </td>
                                     <td><?= $row['status'] ?></td>
                                     <td><?= $row['keterangan'] ?></td>

@@ -1,11 +1,23 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
+include 'application/security/encryption/AES128Encryption.php';
+include 'application/security/hashing/SHA3KECCAK.php';
+include 'application/security/integrity/IntegrityChecking.php';
+
 class Kurir extends CI_Controller
 {
+    private $aes;
+    private $sha;
+    private $integrityCheck;
+
     public function __construct()
     {
         parent::__construct();
+
+        $this->aes = new AES128Encryption("AdrianBadjideh11");
+        $this->sha = new SHA3KECCAK();
+        $this->integrityCheck = new IntegrityChecking();
     }
 
     public function index()
@@ -18,25 +30,99 @@ class Kurir extends CI_Controller
     public function pengirimandaftar()
     {
         $this->load->model('m_kurir');
-
+    
         $idkurir = $this->session->userdata("kurir")["idkurir"];
-        $pengiriman =  $this->m_kurir->daftarPengiriman($idkurir);
-
+        $rawpengiriman =  $this->m_kurir->daftarPengiriman($idkurir);   
+    
+        $pengiriman = [];
+    
+        foreach($rawpengiriman as $data) {
+            //integrity check
+            $hashtable = $this->db->where('idpengiriman', $data['idpengiriman'])->get('hashcoordinate')->row_array();
+    
+            if(isset($data['lat']) && isset($data['lang'])) {
+                if($this->integrityCheck->hashChecking($data['lat'], $hashtable['hash_lat']) && $this->integrityCheck->hashChecking($data['lang'], $hashtable['hash_lang'])) {
+                    $latplaintext = $this->aes->decrypt($data['lat']);
+                    $langplaintext = $this->aes->decrypt($data['lang']);
+                } else {
+                    $latplaintext = '0';
+                    $langplaintext = '0';
+                }
+            } else {
+                $latplaintext = '0';
+                $langplaintext = '0';
+            }
+        
+            $decryptedrow = [
+                'idpengiriman'  => $data['idpengiriman'],
+                'kodepengiriman'=> $data['kodepengiriman'],
+                'namapengirim'  => $data['namapengirim'],
+                'nohppengirim'  => $data['nohppengirim'],
+                'namapenerima'  => $data['namapenerima'],
+                'alamatpenerima'=> $data['alamatpenerima'],
+                'nohppenerima'  => $data['nohppenerima'],
+                'jenisbarang'   => $data['jenisbarang'],
+                'lat'           => $latplaintext,
+                'lang'          => $langplaintext,
+                'keterangan'    => $data['keterangan'],
+            ];
+        
+            $pengiriman[] = $decryptedrow;
+        }
+    
         $data = [
             'pengiriman' => $pengiriman,
         ];
-
+        
         $this->load->view('kurir/layout/header');
         $this->load->view('kurir/pengirimandaftar', $data);
         $this->load->view('kurir/layout/footer');
     }
+    
+    
 
     public function historypengiriman()
     {
         $this->load->model('m_kurir');
 
         $idkurir = $this->session->userdata("kurir")["idkurir"];
-        $pengiriman =  $this->m_kurir->historyPengiriman($idkurir);
+        $rawpengiriman =  $this->m_kurir->historyPengiriman($idkurir);   
+
+        $pengiriman = [];
+
+        foreach($rawpengiriman as $data) {
+            //integrity check
+            $hashtable = $this->db->where('idpengiriman', $data['idpengiriman'])->get('hashcoordinate')->row_array();
+
+            if(isset($data['lat']) && isset($data['lang'])) {
+                if($this->integrityCheck->hashChecking($data['lat'], $hashtable['hash_lat']) && $this->integrityCheck->hashChecking($data['lang'], $hashtable['hash_lang'])) {
+                    $latplaintext = $this->aes->decrypt($data['lat']);
+                    $langplaintext = $this->aes->decrypt($data['lang']);
+                } else {
+                    $latplaintext = '0';
+                    $langplaintext = '0';
+                }
+            } else {
+                $latplaintext = '0';
+                $langplaintext = '0';
+            }
+
+            $decryptedrow = [
+                'idpengiriman'  => $data['idpengiriman'],
+                'kodepengiriman'=> $data['kodepengiriman'],
+                'namapengirim'  => $data['namapengirim'],
+                'nohppengirim'  => $data['nohppengirim'],
+                'namapenerima'  => $data['namapenerima'],
+                'alamatpenerima'=> $data['alamatpenerima'],
+                'nohppenerima'  => $data['nohppenerima'],
+                'jenisbarang'   => $data['jenisbarang'],
+                'lat'           => $this->aes->decrypt($data['lat']),
+                'lang'          => $this->aes->decrypt($data['lang']),
+                'status'        => $data['status'],
+            ];
+
+            $pengiriman[] = $decryptedrow;
+        }
 
         $data = [
             'pengiriman' => $pengiriman,
@@ -65,20 +151,36 @@ class Kurir extends CI_Controller
     public function updatelokasi($id)
     {
         $this->load->model('m_pengiriman');
-
+    
+        // Retrieve latitude and longitude from POST data
         $lat = $this->input->post('lat');
         $lang = $this->input->post('lng');
-
+    
+        // Encrypt latitude and longitude
+        $cipherlat = $this->aes->encrypt($lat);
+        $cipherlang = $this->aes->encrypt($lang);
+    
+        // Prepare data for updating pengiriman table
         $data = array(
-            'lat' => $lat,
-            'lang' => $lang,
+            'lat' => $cipherlat,
+            'lang' => $cipherlang,
             'keterangan' => 'Lokasi kurir diperbarui pada ' . date('Y-m-d H:i:s'),
         );
-
-        $this->m_pengiriman->updateKoordinatLokasi($id, $data);
+    
+        // Prepare data for inserting/updating hashcoordinate table
+        $hashCoordinate = array(
+            'idpengiriman' => $id,
+            'hash_lat' => $this->sha::hash($cipherlat, 256, false),
+            'hash_lang' => $this->sha::hash($cipherlang, 256, false),
+        );
+    
+        // Update coordinates in pengiriman table and insert/update hashcoordinate table
+        $this->m_pengiriman->updateKoordinatLokasi($id, $data, $hashCoordinate);
+    
+        // Set flash message and redirect
         $this->session->set_flashdata('flash', 'Lokasi berhasil diupdate');
         redirect('kurir/pengirimandaftar');
-    }
+    }    
 
     public function updatestatus($id)
     {
@@ -144,6 +246,38 @@ class Kurir extends CI_Controller
         $this->load->model('m_pengiriman');
         
         $pengiriman =  $this->m_pengiriman->rutePengiriman($kodepengiriman);
+
+        $hashtable = $this->db->where('idpengiriman', $pengiriman['idpengiriman'])->get('hashcoordinate')->row_array();
+
+        if($this->integrityCheck->hashChecking($pengiriman['lat'], $hashtable['hash_lat']) && $this->integrityCheck->hashChecking($pengiriman['lang'], $hashtable['hash_lang']) && $this->integrityCheck->hashChecking($pengiriman['lat_pengirim'], $hashtable['hash_lat_pengirim']) && $this->integrityCheck->hashChecking($pengiriman['lang_pengirim'], $hashtable['hash_lang_pengirim']) && $this->integrityCheck->hashChecking($pengiriman['lat_penerima'], $hashtable['hash_lat_penerima']) && $this->integrityCheck->hashChecking($pengiriman['lang_penerima'], $hashtable['hash_lang_penerima'])) {
+            $lat = $this->aes->decrypt($pengiriman['lat']);
+            $lang = $this->aes->decrypt($pengiriman['lang']);
+            $lat_pengirim = $this->aes->decrypt($pengiriman['lat_pengirim']);
+            $lang_pengirim = $this->aes->decrypt($pengiriman['lang_pengirim']);
+            $lat_penerima = $this->aes->decrypt($pengiriman['lat_penerima']);
+            $lang_penerima = $this->aes->decrypt($pengiriman['lang_penerima']);
+        } else {
+            $lat = '0';
+            $lang = '0';
+            $lat_pengirim = '0';
+            $lang_pengirim = '0';
+            $lat_penerima = '0';
+            $lang_penerima = '0';
+        }
+
+        // echo "lat: "; print_r($lat); echo "<br>"; // Debug line
+        // echo "lang: "; print_r($lang); echo "<br>"; // Debug line
+        // echo "lat pengirim: "; print_r($lat_pengirim); echo "<br>"; // Debug line
+        // echo "lang_pengirim: "; print_r($lang_pengirim); echo "<br>"; // Debug line
+        // echo "lat penerima: "; print_r($lat_penerima); echo "<br>"; // Debug line
+        // echo "lang_penerima: "; print_r($lang_penerima); echo "<br>"; // Debug line
+
+        $pengiriman['lat'] = $lat;
+        $pengiriman['lang'] = $lang;
+        $pengiriman['lat_pengirim'] = $lat_pengirim;
+        $pengiriman['lang_pengirim'] = $lang_pengirim;
+        $pengiriman['lat_penerima'] = $lat_penerima;
+        $pengiriman['lang_penerima'] = $lang_penerima;
 
         $data = [
             'pengiriman' => $pengiriman,

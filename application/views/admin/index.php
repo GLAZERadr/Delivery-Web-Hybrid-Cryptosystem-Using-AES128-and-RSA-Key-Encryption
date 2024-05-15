@@ -1,7 +1,12 @@
-<?php foreach ($pengiriman as $data) {
+<?php 
+include 'application/security/encryption/AES128Encryption.php';
+
+$aes = new AES128Encryption("AdrianBadjideh11");
+
+foreach ($pengiriman as $data) {
     $idkurir = $data['idkurir'];
-    $lat_kurir = $data['lat'];
-    $lang_kurir = $data['lang'];
+    $lat_kurir = $aes->decrypt($data['lat']);
+    $lang_kurir = $aes->decrypt($data['lang']);
 } ?>
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyArF0QiK8CUtO3LCvBUoN1cMiHhsTbfIEg&callback=initMap">
 </script>
