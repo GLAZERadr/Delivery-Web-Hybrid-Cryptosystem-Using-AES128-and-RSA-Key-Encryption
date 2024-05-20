@@ -1,3 +1,3 @@
-# Delivery Website Using Combination of Location Encryption AES-128 and SHA-3 Hashing
+# Delivery Website Using Combination of Location Encryption AES-128 and RSA Key Encryption
 
-Website ini menggunakan hybrid cryptography AES-128 dan SHA-3/KECCAK-256 di tingkat database untuk melakukan enkripsi dan hashing. Dekripsi dilakukan untuk menmpilkan lokasi dengan memeriksa integritas terlebih dahulu
+Website ini menggunakan hybrid cryptography AES-128 dan SRSA Key Encryption di tingkat database untuk melakukan enkripsi data dan kunci rahasia. 
