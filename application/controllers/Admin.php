@@ -70,7 +70,7 @@ class Admin extends CI_Controller
         $data = array(
             'namaadmin' =>    $namaadmin,
             'username'  =>    $username,
-            'password'  =>    $password,
+            'password'  =>    password_hash($password, PASSWORD_BCRYPT),
         );
         $this->m_admin->tambahAdmin($data);
         $this->session->set_flashdata('flash', 'Data berhasil ditambahkan');
@@ -104,7 +104,7 @@ class Admin extends CI_Controller
         $data = array(
             'namaadmin' => $namaadmin,
             'username' => $username,
-            'password' => $password,
+            'password' => password_hash($password, PASSWORD_BCRYPT),
         );
 
         $this->m_admin->updateAdmin($id, $data);
@@ -158,7 +158,7 @@ class Admin extends CI_Controller
             'namakurir' =>    $namakurir,
             'nohp'      =>    $nohp,
             'username'  =>    $username,
-            'password'  =>    $password,
+            'password'  =>    password_hash($password, PASSWORD_BCRYPT),
         );
         $this->m_kurir->tambahkanKurir($data);
         $this->session->set_flashdata('flash', 'Data berhasil ditambahkan');
@@ -194,7 +194,7 @@ class Admin extends CI_Controller
             'namakurir' => $namakurir,
             'nohp' => $nohp,
             'username' => $username,
-            'password' => $password,
+            'password' => password_hash($password, PASSWORD_BCRYPT),
         );
 
         $this->m_kurir->updateKurir($id, $data);

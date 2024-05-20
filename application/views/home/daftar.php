@@ -24,7 +24,7 @@
             </div>
             <div class="col-lg-6 ">
                 <div class="rounded contact-form">
-                    <form method="post" action="<?= base_url('home/prosesPendaftaranPelanggan') ?>">
+                    <form method="post" action="<?= base_url('auth/prosesPendaftaranPelanggan') ?>">
                         <div class="mb-4">
                             <label class="mb-2">Nama</label>
                             <input type="text" class="form-control p-3" name="nama" placeholder="Masukkan Nama" required>

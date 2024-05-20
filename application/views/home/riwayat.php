@@ -34,8 +34,8 @@
                         </thead>
                         <tbody>
                             <?php $nomor = 1; ?>
-                            <?php include 'application/security/encryption/AES128Encryption.php';
-                                $aes = new AES128Encryption("AdrianBadjideh11");
+                            <?php include 'application/security/HybridCryptosystem.php';
+                                $hybridCrypto = new HybridCryptosystem('application/security/encryption/public_key.pem', 'application/security/encryption/private_key.pem');
                             ?>
                             <?php foreach ($pengiriman as $row) {
                                 $kurir = $this->db->where('idkurir', $row['idkurir'])->get('kurir')->row_array();
@@ -58,8 +58,8 @@
                                         } ?>
                                     </td>
                                     <td>
-                                        <p>Latitude : <?= !empty($row['lat']) ? $aes->decrypt($row['lat']) : '-' ?></p>
-                                        <p>Longitude : <?= !empty($row['lang']) ? $aes->decrypt($row['lang']) : '-' ?></p>
+                                        <p>Latitude : <?= !empty($row['lat']) ? $hybridCrypto->decryptData($row['lat']) : '-' ?></p>
+                                        <p>Longitude : <?= !empty($row['lang']) ? $hybridCrypto->decryptData($row['lang']) : '-' ?></p>
                                     </td>
                                     <td><?= $row['status'] ?></td>
                                     <td><?= $row['keterangan'] ?></td>

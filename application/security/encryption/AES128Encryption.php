@@ -180,8 +180,8 @@ class AES128Encryption
         $this->roundNumbers = self::$blockNumbers + $this->keyNumbers + 2;
 
         if($this->keyNumbers != 4 && $this->keyNumbers != 6 && $this->keyNumbers != 8) {
-            throw new Exception("Invalid key length");
-            // echo "invalid key length".$this->keyNumbers;
+            // throw new Exception("Invalid key length");
+            echo "invalid key length".$this->keyNumbers;
         } else {
             $this->keyExpansion($key);
         }
@@ -191,22 +191,22 @@ class AES128Encryption
         $temp = ''; 
         $cipherText = ''; 
         $tempOutput = $this->initVector;
-
+    
         $plainTextSize = strlen($plainText);
-
+    
         for ($i = 0; $i < $plainTextSize; $i += 16) {
             for ($j = 0; $j < 16; $j++) {
-                if (($i+$j)<$plainTextSize) {
-                    $temp[$j] = $plainText[$i+$j];
+                if (($i + $j) < $plainTextSize) {
+                    $temp[$j] = $plainText[$i + $j];
                 } else {
                     $temp[$j] = chr(0);
                 }
             }
-
+    
             $tempOutput = $this->encryptBlock($temp);
             $cipherText .= $tempOutput;
         }
-
+    
         return base64_encode($cipherText);
     }
 
@@ -216,22 +216,22 @@ class AES128Encryption
         $plainText = ''; 
         $plainTextBlock = '';
         $encryptedText = base64_decode($encryptedText);
-
+    
         $encryptedTextSize = strlen($encryptedText);
-
+    
         for ($i = 0; $i < $encryptedTextSize; $i += 16) {
             for ($j = 0; $j < 16; $j++) {
-                if (($i+$j) < $encryptedTextSize) {
-                    $block[$j] = $encryptedText[$i+$j];
+                if (($i + $j) < $encryptedTextSize) {
+                    $block[$j] = $encryptedText[$i + $j];
                 } else {
                     $block[$j] = chr(0);
                 }
             }
-
+    
             $plainTextBlock = $this->decryptBlock($block);
             $plainText .= $plainTextBlock;
         }
-
+    
         return rtrim($plainText, chr(0));
     }
 
@@ -265,7 +265,7 @@ class AES128Encryption
         }
         return $bytes;
     }
-
+    
     public function decryptBlock($encryptedText) {
         $bytes = '';
 
@@ -298,6 +298,7 @@ class AES128Encryption
         return $bytes;
     }
 
+ 
     public function keyExpansion($key) {
         $temp = 0; // temporary 32-bit word
 
@@ -319,9 +320,9 @@ class AES128Encryption
         for (; $i < self::$blockNumbers*($this->roundNumbers+1); $i++) {
             $temp = $this->keyScheduler[$i-1];
 
-            if ($i%$this->keyNumbers == 0) {
+            if ($i % $this->keyNumbers == 0) {
                 $temp = $this->subWords($this->rotWord($temp)) ^ self::$roundConst[$i/$this->keyNumbers];
-            } elseif ($this->keyNumbers > 6 && $i%$this->keyNumbers == 4) {
+            } elseif ($this->keyNumbers > 6 && $i % $this->keyNumbers == 4) {
                 $temp = $this->subWords($temp);
             }
 
@@ -330,6 +331,7 @@ class AES128Encryption
             self::make32BitWord($this->keyScheduler[$i]);
         }
     }
+    
 
     public function addRoundKey($round) {
         $temp = '';
@@ -486,3 +488,22 @@ class AES128Encryption
     }
         
 }
+
+// // Include the AES128 class
+// require_once 'AES128Encryption.php';
+
+// // Instantiate the AES128 class with a key
+// $aes = new AES128Encryption("AdrianBadjideh11");
+
+// // Data to encrypt
+// $data = "-2.965504";
+
+// // Encrypt the data
+// $encrypted_data = "UO3DuI55IRLVv4BbWrjSPg==";
+
+// echo "Encrypted data: " . $encrypted_data . "\n";
+
+// // // Decrypt the data
+// $decrypted_data = $aes->decrypt($encrypted_data);
+
+// echo "Decrypted data: " . $decrypted_data . "\n";

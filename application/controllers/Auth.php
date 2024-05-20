@@ -124,7 +124,7 @@ class Auth extends CI_Controller
             $data = [
                 'namapelanggan' => $nama,
                 'username' => $username,
-                'password' => $password,
+                'password' => password_hash($password, PASSWORD_BCRYPT),
                 'nohp' => $nohp,
             ];
 
@@ -135,5 +135,4 @@ class Auth extends CI_Controller
             redirect('auth/login');
         }
     }
-
 }

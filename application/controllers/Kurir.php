@@ -1,23 +1,17 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-include 'application/security/encryption/AES128Encryption.php';
-include 'application/security/hashing/SHA3KECCAK.php';
-include 'application/security/integrity/IntegrityChecking.php';
+include 'application/security/HybridCryptosystem.php';
 
 class Kurir extends CI_Controller
 {
-    private $aes;
-    private $sha;
-    private $integrityCheck;
+    private $hybridCrypto;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->aes = new AES128Encryption("AdrianBadjideh11");
-        $this->sha = new SHA3KECCAK();
-        $this->integrityCheck = new IntegrityChecking();
+        $this->hybridCrypto = new HybridCryptosystem('application/security/encryption/public_key.pem', 'application/security/encryption/private_key.pem');
     }
 
     public function index()
@@ -37,22 +31,20 @@ class Kurir extends CI_Controller
         $pengiriman = [];
     
         foreach($rawpengiriman as $data) {
-            //integrity check
-            $hashtable = $this->db->where('idpengiriman', $data['idpengiriman'])->get('hashcoordinate')->row_array();
-    
-            if(isset($data['lat']) && isset($data['lang'])) {
-                if($this->integrityCheck->hashChecking($data['lat'], $hashtable['hash_lat']) && $this->integrityCheck->hashChecking($data['lang'], $hashtable['hash_lang'])) {
-                    $latplaintext = $this->aes->decrypt($data['lat']);
-                    $langplaintext = $this->aes->decrypt($data['lang']);
-                } else {
-                    $latplaintext = '0';
-                    $langplaintext = '0';
+
+            if(!empty($data['lat']) && !empty($data['lang'])) {
+                try {
+                    $latplaintext = $this->hybridCrypto->decryptData($data['lat']);
+                    $langplaintext = $this->hybridCrypto->decryptData($data['lang']);
+                } catch (Exception $e) {
+                    $latplaintext = 'Decryption Error';
+                    $langplaintext = 'Decryption Error';
                 }
             } else {
                 $latplaintext = '0';
                 $langplaintext = '0';
             }
-        
+
             $decryptedrow = [
                 'idpengiriman'  => $data['idpengiriman'],
                 'kodepengiriman'=> $data['kodepengiriman'],
@@ -91,16 +83,14 @@ class Kurir extends CI_Controller
         $pengiriman = [];
 
         foreach($rawpengiriman as $data) {
-            //integrity check
-            $hashtable = $this->db->where('idpengiriman', $data['idpengiriman'])->get('hashcoordinate')->row_array();
 
-            if(isset($data['lat']) && isset($data['lang'])) {
-                if($this->integrityCheck->hashChecking($data['lat'], $hashtable['hash_lat']) && $this->integrityCheck->hashChecking($data['lang'], $hashtable['hash_lang'])) {
-                    $latplaintext = $this->aes->decrypt($data['lat']);
-                    $langplaintext = $this->aes->decrypt($data['lang']);
-                } else {
-                    $latplaintext = '0';
-                    $langplaintext = '0';
+            if(!empty($data['lat']) && !empty($data['lang'])) {
+                try {
+                    $latplaintext = $this->hybridCrypto->decryptData($data['lat']);
+                    $langplaintext = $this->hybridCrypto->decryptData($data['lang']);
+                } catch (Exception $e) {
+                    $latplaintext = 'Decryption Error';
+                    $langplaintext = 'Decryption Error';
                 }
             } else {
                 $latplaintext = '0';
@@ -116,8 +106,8 @@ class Kurir extends CI_Controller
                 'alamatpenerima'=> $data['alamatpenerima'],
                 'nohppenerima'  => $data['nohppenerima'],
                 'jenisbarang'   => $data['jenisbarang'],
-                'lat'           => $this->aes->decrypt($data['lat']),
-                'lang'          => $this->aes->decrypt($data['lang']),
+                'lat'           => $latplaintext,
+                'lang'          => $langplaintext,
                 'status'        => $data['status'],
             ];
 
@@ -157,8 +147,8 @@ class Kurir extends CI_Controller
         $lang = $this->input->post('lng');
     
         // Encrypt latitude and longitude
-        $cipherlat = $this->aes->encrypt($lat);
-        $cipherlang = $this->aes->encrypt($lang);
+        $cipherlat = $this->hybridCrypto->encryptData($lat);
+        $cipherlang = $this->hybridCrypto->encryptData($lang);
     
         // Prepare data for updating pengiriman table
         $data = array(
@@ -166,18 +156,9 @@ class Kurir extends CI_Controller
             'lang' => $cipherlang,
             'keterangan' => 'Lokasi kurir diperbarui pada ' . date('Y-m-d H:i:s'),
         );
-    
-        // Prepare data for inserting/updating hashcoordinate table
-        $hashCoordinate = array(
-            'idpengiriman' => $id,
-            'hash_lat' => $this->sha::hash($cipherlat, 256, false),
-            'hash_lang' => $this->sha::hash($cipherlang, 256, false),
-        );
-    
-        // Update coordinates in pengiriman table and insert/update hashcoordinate table
-        $this->m_pengiriman->updateKoordinatLokasi($id, $data, $hashCoordinate);
-    
-        // Set flash message and redirect
+
+        $this->m_pengiriman->updateKoordinatLokasi($id, $data);
+
         $this->session->set_flashdata('flash', 'Lokasi berhasil diupdate');
         redirect('kurir/pengirimandaftar');
     }    
@@ -232,7 +213,7 @@ class Kurir extends CI_Controller
             'namakurir' => $namakurir,
             'nohp' => $nohp,
             'username' => $username,
-            'password' => $password,
+            'password' => password_hash($password, PASSWORD_BCRYPT),
         );
 
         $this->m_kurir->updateKurir($id, $data);
@@ -247,15 +228,22 @@ class Kurir extends CI_Controller
         
         $pengiriman =  $this->m_pengiriman->rutePengiriman($kodepengiriman);
 
-        $hashtable = $this->db->where('idpengiriman', $pengiriman['idpengiriman'])->get('hashcoordinate')->row_array();
-
-        if($this->integrityCheck->hashChecking($pengiriman['lat'], $hashtable['hash_lat']) && $this->integrityCheck->hashChecking($pengiriman['lang'], $hashtable['hash_lang']) && $this->integrityCheck->hashChecking($pengiriman['lat_pengirim'], $hashtable['hash_lat_pengirim']) && $this->integrityCheck->hashChecking($pengiriman['lang_pengirim'], $hashtable['hash_lang_pengirim']) && $this->integrityCheck->hashChecking($pengiriman['lat_penerima'], $hashtable['hash_lat_penerima']) && $this->integrityCheck->hashChecking($pengiriman['lang_penerima'], $hashtable['hash_lang_penerima'])) {
-            $lat = $this->aes->decrypt($pengiriman['lat']);
-            $lang = $this->aes->decrypt($pengiriman['lang']);
-            $lat_pengirim = $this->aes->decrypt($pengiriman['lat_pengirim']);
-            $lang_pengirim = $this->aes->decrypt($pengiriman['lang_pengirim']);
-            $lat_penerima = $this->aes->decrypt($pengiriman['lat_penerima']);
-            $lang_penerima = $this->aes->decrypt($pengiriman['lang_penerima']);
+        if(!empty($pengiriman['lat']) && !empty($pengiriman['lang']) && !empty($pengiriman['lat_pengirim']) && !empty($pengiriman['lat_pengirim']) && !empty($pengiriman['lang_pengirim']) && !empty($pengiriman['lat_penerima']) && !empty($pengiriman['lang_penerima'])) {
+            try {
+                $lat = $this->hybridCrypto->decryptData($pengiriman['lat']);
+                $lang = $this->hybridCrypto->decryptData($pengiriman['lang']);
+                $lat_pengirim = $this->hybridCrypto->decryptData($pengiriman['lat_pengirim']);
+                $lang_pengirim = $this->hybridCrypto->decryptData($pengiriman['lang_pengirim']);
+                $lat_penerima = $this->hybridCrypto->decryptData($pengiriman['lat_penerima']);
+                $lang_penerima = $this->hybridCrypto->decryptData($pengiriman['lang_penerima']);   
+            } catch (Exception $e) {
+                $lat = 'Decryption Error';
+                $lang = 'Decryption Error';
+                $lat_pengirim = 'Decryption Error';
+                $lang_pengirim = 'Decryption Error';
+                $lat_penerima = 'Decryption Error';
+                $lang_penerima = 'Decryption Error';
+            }
         } else {
             $lat = '0';
             $lang = '0';
@@ -264,13 +252,6 @@ class Kurir extends CI_Controller
             $lat_penerima = '0';
             $lang_penerima = '0';
         }
-
-        // echo "lat: "; print_r($lat); echo "<br>"; // Debug line
-        // echo "lang: "; print_r($lang); echo "<br>"; // Debug line
-        // echo "lat pengirim: "; print_r($lat_pengirim); echo "<br>"; // Debug line
-        // echo "lang_pengirim: "; print_r($lang_pengirim); echo "<br>"; // Debug line
-        // echo "lat penerima: "; print_r($lat_penerima); echo "<br>"; // Debug line
-        // echo "lang_penerima: "; print_r($lang_penerima); echo "<br>"; // Debug line
 
         $pengiriman['lat'] = $lat;
         $pengiriman['lang'] = $lang;

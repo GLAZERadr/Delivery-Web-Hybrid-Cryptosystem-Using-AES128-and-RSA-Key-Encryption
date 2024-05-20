@@ -1,22 +1,16 @@
 <?php 
 defined('BASEPATH') or exit('No direct script access allowed');
 
-include 'application/security/encryption/AES128Encryption.php';
-include 'application/security/hashing/SHA3KECCAK.php';
-include 'application/security/integrity/IntegrityChecking.php';
+include 'application/security/HybridCryptosystem.php';
 
 class Pelanggan extends CI_Controller
 {
-    private $aes;
-    private $sha;
-    private $integrityCheck;
+    private $hybridCrypto;
 
     public function __construct() {
         parent::__construct();
 
-        $this->aes = new AES128Encryption("AdrianBadjideh11");
-        $this->sha = new SHA3KECCAK();
-        $this->integrityCheck = new IntegrityChecking();
+        $this->hybridCrypto = new HybridCryptosystem('application/security/encryption/public_key.pem', 'application/security/encryption/private_key.pem');
     }
 
     public function pengirimanrekap()
@@ -95,18 +89,10 @@ class Pelanggan extends CI_Controller
         $kodepengiriman = "DLV" . str_pad(rand(0, 99999), 5, '0', STR_PAD_LEFT);
     
         // Encrypt latitude and longitude values
-        $cipherlatpengirim = $this->aes->encrypt($lat_pengirim);
-        $cipherlangpengirim = $this->aes->encrypt($lang_pengirim);
-        $cipherlatpenerima = $this->aes->encrypt($lat_penerima);
-        $cipherlangpenerima =  $this->aes->encrypt($lang_penerima);
-    
-        // Hash latitude and longitude values
-        $hashCoordinate = [
-            'hash_lat_pengirim' => $this->sha::hash($cipherlatpengirim, 256, false),
-            'hash_lang_pengirim' => $this->sha::hash($cipherlangpengirim, 256, false),
-            'hash_lat_penerima' => $this->sha::hash($cipherlatpenerima, 256, false),
-            'hash_lang_penerima' => $this->sha::hash($cipherlangpenerima, 256, false),
-        ];
+        $cipherlatpengirim = $this->hybridCrypto->encryptData($lat_pengirim);
+        $cipherlangpengirim = $this->hybridCrypto->encryptData($lang_pengirim);
+        $cipherlatpenerima = $this->hybridCrypto->encryptData($lat_penerima);
+        $cipherlangpenerima =  $this->hybridCrypto->encryptData($lang_penerima);
     
         // Prepare data for pengiriman table
         $data_pengiriman = [
@@ -134,15 +120,6 @@ class Pelanggan extends CI_Controller
         // Insert data into pengiriman table
         $this->m_pengiriman->tambahPengiriman($data_pengiriman);
     
-        // Retrieve the idpengiriman of the newly inserted pengiriman
-        $idpengiriman = $this->db->insert_id();
-    
-        // Add idpengiriman to hashCoordinate array
-        $hashCoordinate['idpengiriman'] = $idpengiriman;
-    
-        // Insert hash values into hashcoordinate table
-        $this->db->insert('hashcoordinate', $hashCoordinate);
-    
         $this->session->unset_userdata('rekap_paket');
         $this->session->set_flashdata('alert', 'Pengiriman berhasil ditambahkan');
         redirect('home/riwayat');
@@ -165,23 +142,31 @@ class Pelanggan extends CI_Controller
 
         $trackingPengiriman =  $this->m_pengiriman->trackingPengiriman($kodePengiriman);
 
-        $hashtable = $this->db->where('idpengiriman', $trackingPengiriman['idpengiriman'])->get('hashcoordinate')->row_array();
-
-        if($this->integrityCheck->hashChecking($trackingPengiriman['lat'], $hashtable['hash_lat']) && $this->integrityCheck->hashChecking($trackingPengiriman['lang'], $hashtable['hash_lang']) && $this->integrityCheck->hashChecking($trackingPengiriman['lat_pengirim'], $hashtable['hash_lat_pengirim']) && $this->integrityCheck->hashChecking($trackingPengiriman['lang_pengirim'], $hashtable['hash_lang_pengirim']) && $this->integrityCheck->hashChecking($trackingPengiriman['lat_penerima'], $hashtable['hash_lat_penerima']) && $this->integrityCheck->hashChecking($trackingPengiriman['lang_penerima'], $hashtable['hash_lang_penerima'])) {
-            $lat = $this->aes->decrypt($trackingPengiriman['lat']);
-            $lang = $this->aes->decrypt($trackingPengiriman['lang']);
-            $lat_pengirim = $this->aes->decrypt($trackingPengiriman['lat_pengirim']);
-            $lang_pengirim = $this->aes->decrypt($trackingPengiriman['lang_pengirim']);
-            $lat_penerima = $this->aes->decrypt($trackingPengiriman['lat_penerima']);
-            $lang_penerima = $this->aes->decrypt($trackingPengiriman['lang_penerima']);
+        if(!empty($trackingPengiriman['lat']) && !empty($trackingPengiriman['lang']) && !empty($trackingPengiriman['lat_pengirim']) && !empty($trackingPengiriman['lat_pengirim']) && !empty($trackingPengiriman['lang_pengirim']) && !empty($trackingPengiriman['lat_penerima']) && !empty($trackingPengiriman['lang_penerima'])) {
+            try {
+                $lat = $this->hybridCrypto->decryptData($trackingPengiriman['lat']);
+                $lang = $this->hybridCrypto->decryptData($trackingPengiriman['lang']);
+                $lat_pengirim = $this->hybridCrypto->decryptData($trackingPengiriman['lat_pengirim']);
+                $lang_pengirim = $this->hybridCrypto->decryptData($trackingPengiriman['lang_pengirim']);
+                $lat_penerima = $this->hybridCrypto->decryptData($trackingPengiriman['lat_penerima']);
+                $lang_penerima = $this->hybridCrypto->decryptData($trackingPengiriman['lang_penerima']);
+            } catch (Exception $e) {
+                $lat = 'Decryption Error';
+                $lang = 'Decryption Error';
+                $lat_pengirim = 'Decryption Error';
+                $lang_pengirim = 'Decryption Error';
+                $lat_penerima = 'Decryption Error';
+                $lang_penerima = 'Decryption Error';
+            }
         } else {
             $lat = '0';
             $lang = '0';
             $lat_pengirim = '0';
             $lang_pengirim = '0';
             $lat_penerima = '0';
-            $lang_penerima = '0';
+            $lang_penerima = '0'; 
         }
+
 
         $trackingPengiriman['lat'] = $lat;
         $trackingPengiriman['lang'] = $lang;
@@ -220,7 +205,7 @@ class Pelanggan extends CI_Controller
             'namapelanggan' => $namapelanggan,
             'nohp'          => $nohp,
             'username'      => $username,
-            'password'      => $password,
+            'password'      => password_hash($password, PASSWORD_BCRYPT),
         ];
 
         $this->m_pelanggan->updatePelanggan($id, $data);
